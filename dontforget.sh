@@ -90,10 +90,56 @@ addappointment()
 	time="$1"; shift
 	description="$1"; shift
 
-	echo "$date,$time,$description" >> $appointmentsfile
+	if [ -z "$date" ] ||
+		[ -z "$time" ] ||
+		[ -z "$description" ]
+	then
+		echo "Missing parameters. Usage:"
+		echo "${0##*/} add (date) (time) (description)"
+	else
+		echo "$date,$time,$description" >> $appointmentsfile
+	fi
 }
 
 notifyappointment()
 {
+	while IFS= read -r line || [ -n $line ]
+	do
+		[ "$line" = "$header" ] && continue
 
+	done < $appointmentsfile
 }
+
+showappointmentsfile()
+{
+	column -s',' -t < "$appointmentsfile"
+}
+
+
+#RUNNING
+[ -e "$appointmentsfile" ] ||
+	echo "$header" > "$appointmentsfile"
+
+arg="$1"; shift
+case "$arg" in
+	add)
+		addappointment "$1" "$2" "$3"
+		;;
+	edit)
+		"$EDITOR" "$appointmentsfile"
+		;;
+	fetch)
+		fetchupdates
+		;;
+	show)
+		showappointmentsfile "$1"
+		;;
+	*)
+		echo "usage: ${0##*/} ( command )"
+		echo "commands:"
+		echo "		add "
+		echo "		edit: Opens the appointmentsfile with EDITOR"
+		echo "		fetch: Fetches appointments registered by email"
+		echo "		show [past]: Shows the current month transactions. If 'full' is passed as argument,"
+		;;
+esac
