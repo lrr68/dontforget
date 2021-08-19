@@ -106,18 +106,36 @@ addappointment()
 
 notifyappointment()
 {
-	while IFS= read -r line || [ -n $line ]
-	do
-		[ "$line" = "$header" ] && continue
+	#get appointments for tomorrow and exactly seven days ahead
 
+	msg=""
+	weekday="$(date +%A)"
+	tomorrow="$(date -d tomorrow +%Y/%m/%d)"
+	aweekfromnow="$(date -d "next $weekday" +%Y/%m/%d)"
+
+	while IFS= read -r aptmt || [ -n "$aptmt" ]
+	do
+		[ "$aptmt" = "$header" ] && continue
+
+		aptdate="${aptmt%%,*}"
+
+		if [ "$aptdate" = "$tomorrow" ]
+		then
+			msg="$msg""Tomorrow at ${aptmt#*,}\n"
+		elif [ "$aptdate" = "$aweekfromnow" ]
+		then
+			msg="$msg""Next week ($weekday) at ${aptmt#*,}\n"
+		fi
 	done < $appointmentsfile
+
+	[ "$msg" ] &&
+		notify-send "You have the following appointments" "$msg"
 }
 
 showappointmentsfile()
 {
 	column -s',' -t < "$appointmentsfile"
 }
-
 
 #RUNNING
 [ -e "$appointmentsfile" ] ||
@@ -133,6 +151,9 @@ case "$arg" in
 		;;
 	fetch)
 		fetchupdates
+		;;
+	notify)
+		notifyappointment
 		;;
 	show)
 		showappointmentsfile "$1"
