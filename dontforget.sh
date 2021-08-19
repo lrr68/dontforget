@@ -37,14 +37,15 @@ fetchemailappointments()
 			1) #read until find spend or receive
 				#concatenate line for future error reporting
 				body="$body|$line"
-				if [ "${line%% *}" = "add" ]
+				date="${line%% *}"
+				isdate="$(date -d ${date} 2>/dev/null)"
+				if [ "$isdate" ]
 				then
 					state=2
-					date="${line%% *}"
 					time="${line#* }"
-					time="${amount%% *}"
+					time="${time%% *}"
 					description="${line#* }"
-					description="${t_type#* }"
+					description="${description#* }"
 				elif [ "${line%%:*}" = "date.received" ]
 				then
 					#read until date and did not get command, something is wrong with the email
@@ -62,7 +63,8 @@ fetchemailappointments()
 			2) #read until find date.received
 				if [ "${line%%:*}" = "date.received" ]
 				then
-					addappointment $date $time $description
+					addappointment "$date" "$time" "$description"
+
 					#Reset to read next
 					state=0
 					body=""
@@ -73,6 +75,7 @@ fetchemailappointments()
 	done < "$mailquery"
 	rm "$mailquery"
 
+	#format log file and notify
 	[ -e "$HOME/.${0##*/}.log" ] &&
 		sed 's/|/\n    /g' < "$HOME/.${0##*/}.log" > "$HOME/.${0##*/}.log.aux" &&
 		mv "$HOME/.${0##*/}.log.aux" "$HOME/.${0##*/}.log" &&
