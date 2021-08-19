@@ -9,7 +9,7 @@ header="date,time,description"
 #email is used to ssh to server and fetch remote commands
 email="lucca@luccaaugusto.xyz"
 #subject is used to filter emails that contain commands
-subject="Dontforget"
+subject="Naoesquece"
 
 fetchemailappointments()
 {
