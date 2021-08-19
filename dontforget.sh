@@ -10,6 +10,8 @@ header="date,time,description"
 email="lucca@luccaaugusto.xyz"
 #subject is used to filter emails that contain commands
 subject="Naoesquece"
+notificationsubject="Não Esquece Hein"
+
 
 fetchemailappointments()
 {
@@ -20,7 +22,7 @@ fetchemailappointments()
 	body=""
 	mailquery="${0##*/}.mailquery"
 
-	(ssh $email "doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
+	(ssh "$email" "doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
 		doveadm flags add '\Seen' mailbox inbox unseen subject $subject &&
 		doveadm move Trash mailbox inbox seen subject $subject &&
 		cat mailquery" > "$mailquery")
@@ -128,8 +130,16 @@ notifyappointment()
 		fi
 	done < $appointmentsfile
 
-	[ "$msg" ] &&
-		notify-send "You have the following appointments" "$msg"
+	if [ "$msg" ]
+	then
+		# if running from server, just run dovecot-lda, else use ssh
+		if [ "$HOSTNAME" = "$serverhostname" ]
+		then
+			printf "From: ${email%%@*}-${0##*/}\nTo: ${email%%@*}\nSubject: $notificationsubject \nContent-Type: text/plain; charset=\"UTF-8\"\n\n$msg" | /usr/lib/dovecot/dovecot-lda -d ${email%%@*}
+		else
+			(ssh "$email" "printf \"From: ${email%%@*}-${0##*/}\nTo: ${email%%@*}\nSubject: $notificationsubject \nContent-Type: text/plain; charset=\"UTF-8\"\n\n$msg\" | /usr/lib/dovecot/dovecot-lda -d ${email%%@*}")
+		fi
+	fi
 }
 
 showappointmentsfile()
