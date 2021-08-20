@@ -4,16 +4,20 @@
 #-New appointments can be created by sending an email with an add command
 #-Can notify via email your close appointments
 
-appointmentsfile="$DONTFORGET_FILE"
-[ -z "$appointmentsfile" ] &&
-	appointmentsfile="$REPOS/personalspace/appointments.csv"
-
+serverhostname="mail"
 header="date,time,description"
 #email is used to ssh to server and fetch remote commands
 email="lucca@luccaaugusto.xyz"
 #subject is used to filter emails that contain commands
 subject="Naoesquece"
 notificationsubject="Não Esquece Hein"
+
+if [ "$HOSTNAME" = "$serverhostname" ]
+then
+	appointmentsfile="$HOME/personalspace/appointments.csv"
+else
+	appointmentsfile="$REPOS/personalspace/appointments.csv"
+fi
 
 
 fetchemailappointments()
