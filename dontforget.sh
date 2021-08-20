@@ -18,8 +18,9 @@ fetchemailappointments()
 	state=0
 	date=""
 	time=""
-	description=""
 	body=""
+	description=""
+	errfile="$HOME/.${0##*/}.log"
 	mailquery="${0##*/}.mailquery"
 
 	(ssh "$email" "doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
@@ -56,7 +57,7 @@ fetchemailappointments()
 						echo "    Command not found in email"
 						echo "    body: $body"
 						echo "====Please do this one manually"
-					} >> "$HOME/.${0##*/}.log"
+					} >> "$errfile"
 
 					state=0
 					body=""
@@ -78,10 +79,10 @@ fetchemailappointments()
 	rm "$mailquery"
 
 	#format log file and notify
-	[ -e "$HOME/.${0##*/}.log" ] &&
-		sed 's/|/\n    /g' < "$HOME/.${0##*/}.log" > "$HOME/.${0##*/}.log.aux" &&
-		mv "$HOME/.${0##*/}.log.aux" "$HOME/.${0##*/}.log" &&
-		notify-send "${0##*/} ERROR" "There were errors processing email logged appointments. See $HOME/.${0##*/}.log"
+	[ -e "$errfile" ] &&
+		sed 's/|/\n    /g' < "$errfile" > "$errfile.aux" &&
+		mv "$errfile.aux" "$errfile" &&
+		notify-send "${0##*/} ERROR" "There were errors processing email logged appointments. See $errfile"
 }
 
 fetchupdates()
