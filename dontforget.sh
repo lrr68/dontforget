@@ -5,6 +5,7 @@
 #-Can notify via email your close appointments
 
 serverhostname="mail"
+found_hostname="$(cat /etc/hostname)"
 header="date,time,description"
 #email is used to ssh to server and fetch remote commands
 email="lucca@luccaaugusto.xyz"
@@ -12,9 +13,9 @@ email="lucca@luccaaugusto.xyz"
 subject="Naoesquece"
 notificationsubject="Não Esquece Hein"
 
-if [ "$HOSTNAME" = "$serverhostname" ]
+if [ "$found_hostname" = "$serverhostname" ]
 then
-	appointmentsfile="$HOME/personalspace/appointments.csv"
+	appointmentsfile="/home/${email%%@*}/personalspace/appointments.csv"
 else
 	appointmentsfile="$REPOS/personalspace/appointments.csv"
 fi
@@ -141,7 +142,7 @@ notifyappointment()
 	if [ "$msg" ]
 	then
 		# if running from server, just run dovecot-lda, else use ssh
-		if [ "$HOSTNAME" = "$serverhostname" ]
+		if [ "$found_hostname" = "$serverhostname" ]
 		then
 			printf "From: ${email%%@*}-${0##*/}\nTo: ${email%%@*}\nSubject: $notificationsubject \nContent-Type: text/plain; charset=\"UTF-8\"\n\n$msg" | /usr/lib/dovecot/dovecot-lda -d ${email%%@*}
 		else
