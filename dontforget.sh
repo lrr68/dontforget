@@ -31,14 +31,21 @@ fetchemailappointments()
 	errfile="$HOME/.${0##*/}.log"
 	mailquery="${0##*/}.mailquery"
 
-	(ssh "$email" "doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
-		doveadm flags add '\Seen' mailbox inbox unseen subject $subject &&
-		doveadm move Trash mailbox inbox seen subject $subject &&
-		cat mailquery" > "$mailquery")
 	# query the server for unseen emails with subject=$subject
 	# outputs email body and date.received to a file so line breaks are preserved
 	# marks these emails as seen
 	# cats the file so we get it's contents locally
+	if [ "$found_hostname" = "$serverhostname" ]
+	then
+		doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
+		doveadm flags add '\Seen' mailbox inbox unseen subject $subject &&
+		doveadm move Trash mailbox inbox seen subject $subject
+	else
+		(ssh "$email" "doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
+			doveadm flags add '\Seen' mailbox inbox unseen subject $subject &&
+			doveadm move Trash mailbox inbox seen subject $subject &&
+			cat mailquery" > "$mailquery")
+	fi
 	while IFS= read -r line || [ -n "$line" ]
 	do
 		case "$state" in
