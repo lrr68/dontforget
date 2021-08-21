@@ -37,14 +37,14 @@ fetchemailappointments()
 	# cats the file so we get it's contents locally
 	if [ "$found_hostname" = "$serverhostname" ]
 	then
-		doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
+		doveadm fetch 'body date.received' mailbox inbox subject $subject > $mailquery &&
 		doveadm flags add '\Seen' mailbox inbox unseen subject $subject &&
 		doveadm move Trash mailbox inbox seen subject $subject
 	else
-		(ssh "$email" "doveadm fetch 'body date.received' mailbox inbox subject $subject > mailquery &&
+		(ssh "$email" "doveadm fetch 'body date.received' mailbox inbox subject $subject > $mailquery &&
 			doveadm flags add '\Seen' mailbox inbox unseen subject $subject &&
 			doveadm move Trash mailbox inbox seen subject $subject &&
-			cat mailquery" > "$mailquery")
+			cat $mailquery" > "$mailquery")
 	fi
 	while IFS= read -r line || [ -n "$line" ]
 	do
