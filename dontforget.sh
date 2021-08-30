@@ -118,7 +118,13 @@ addappointment()
 		echo "Missing parameters. Usage:"
 		echo "${0##*/} add (date) (time) (description)"
 	else
-		echo "$date,$time,$description" >> $appointmentsfile
+		echo "$date,$time,$description" >> "$appointmentsfile"
+
+		#sort appointments by date
+		tail -n +2 "$appointmentsfile" | sort -o "$appointmentsfile.aux" &&
+			echo "$header" > "$appointmentsfile" &&
+			cat "$appointmentsfile.aux" >> "$appointmentsfile" &&
+			rm "$appointmentsfile.aux"
 	fi
 }
 
@@ -167,7 +173,7 @@ showappointmentsfile()
 [ -e "$appointmentsfile" ] ||
 	echo "$header" > "$appointmentsfile"
 
-arg="$1"; shift
+[ "$1" ] && arg="$1" && shift
 case "$arg" in
 	add)
 		addappointment "$1" "$2" "$3"
@@ -187,7 +193,7 @@ case "$arg" in
 	*)
 		echo "usage: ${0##*/} ( command )"
 		echo "commands:"
-		echo "		add "
+		echo "		add: (date) (time) (description) "
 		echo "		edit: Opens the appointmentsfile with EDITOR"
 		echo "		fetch: Fetches appointments registered by email"
 		echo "		show [past]: Shows the current month transactions. If 'full' is passed as argument,"
