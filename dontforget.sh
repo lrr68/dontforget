@@ -140,8 +140,6 @@ addappointment()
 		#current year is default
 		[ "$year" = "$month" ] && year="$(date +%Y)"
 
-		echo "$year/$month/$day"
-
 		echo "$year/$month/$day,$time,$description" >> "$appointmentsfile"
 
 		#sort appointments by date
