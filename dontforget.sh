@@ -118,7 +118,31 @@ addappointment()
 		echo "Missing parameters. Usage:"
 		echo "${0##*/} add (date) (time) (description)"
 	else
-		echo "$date,$time,$description" >> "$appointmentsfile"
+
+		case "$date" in
+			*-*)year=${date%%-*}
+				month=${date%-*}
+				month=${month#*-}
+				day=${date##*-}
+				;;
+			*/*)year=${date%/*}
+				year=${year%/*}
+				month=${date%/*}
+				month=${month#*/}
+				day=${date##*/}
+				;;
+			*) #unkown date
+				echo "Unknown date format, please use YYYY-MM-DD or YYYY/MM/DD"
+				return
+				;;
+		esac
+
+		#current year is default
+		[ "$year" = "$month" ] && year="$(date +%Y)"
+
+		echo "$year/$month/$day"
+
+		echo "$year/$month/$day,$time,$description" >> "$appointmentsfile"
 
 		#sort appointments by date
 		tail -n +2 "$appointmentsfile" | sort -o "$appointmentsfile.aux" &&
